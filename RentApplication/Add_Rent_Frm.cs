@@ -14,9 +14,12 @@ namespace RentApplication
 {
     public partial class Add_Rent_Frm : Form
     {
-        SqlConnection con = new SqlConnection(@"Data Source=localhost\sqlexpress;Initial Catalog=Rental_db;Integrated Security=True");
+        DBconnect connect = new DBconnect();
+        RentClass RC = new RentClass();
+        //SqlConnection con = new SqlConnection(@"Data Source=localhost\sqlexpress;Initial Catalog=Rental_db;Integrated Security=True");
 
         int tid, index,NumofItem,Avlbitem,BlnsItemLb,Rid=0,dfrns1,dfrns2,Ntid;
+        decimal percent, Rrate, total, Disc;
         string Todaydate = DateTime.Now.ToString();
 
 
@@ -27,40 +30,41 @@ namespace RentApplication
 
         private void btn_Additem_Click(object sender, EventArgs e)
         {
-            try
-            {
+           // try
+           // {
                 if (txt_Customername.Text != "" && txt_Discount.Text != "" && txt_Numberofitem.Text != "" && txt_Phonenumber.Text != "" && txt_Rentrate.Text != "" && Txt_SlNo.Text != "" && comboBox_Itemname.Text != "" && dateTimePicker_Startingdate.Value.Date<dateTimePicker_Duedate.Value.Date)
                 {
-                    AvailableItem();
+                   
+                Total();
+                AvailableItem();
 
+                string ToolName =comboBox_Itemname.Text, SlNo = Txt_SlNo.Text,Customername=txt_Customername.Text,PhoneNumber=txt_Phonenumber.Text,Address=txt_Address.Text;
+                    int Numberofitem = Int32.Parse(txt_Numberofitem.Text),Tid=tid;
+                    decimal  Rentrate = Convert.ToDecimal(txt_Rentrate.Text);
+                    DateTime StartingDate = Convert.ToDateTime(dateTimePicker_Startingdate.Text),DueDate= Convert.ToDateTime(dateTimePicker_Duedate.Text);
+                    if (RC.InsertRentItem(Rid,SlNo,ToolName, Numberofitem,Customername,StartingDate,DueDate,PhoneNumber,Rentrate, Disc, Address,total,Tid,Avlbitem))
+                    {
+                        if (Rid == 0)
+                        {
+                            MessageBox.Show("Added New Tool Item");
+                        }
+                        else
+                        {
+                            MessageBox.Show("Updated Tool Item");
+                        }
+                    }
                     // dgv_add_Rent.Rows.Add(Txt_SlNo.Text, comboBox_Itemname.Text, txt_Numberofitem.Text, txt_Customername.Text, dateTimePicker_Startingdate.Text, dateTimePicker_Duedate.Text, txt_Phonenumber.Text, txt_Rentrate.Text, txt_Discount.Text, txt_Address.Text, txtTotal.Text,tid,Avlbitem);
-                    con.Open();
-                    SqlCommand cmd = new SqlCommand("Add_Rent_Ins", con);
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@flag", SqlDbType.Int).Value = Rid;
-                    cmd.Parameters.AddWithValue("@SlNo", SqlDbType.Int).Value = Txt_SlNo.Text;
-                    cmd.Parameters.AddWithValue("@ToolName", SqlDbType.VarChar).Value = comboBox_Itemname.Text;
-                    cmd.Parameters.AddWithValue("@NumberofItem", SqlDbType.Int).Value = int.Parse(txt_Numberofitem.Text);
-                    cmd.Parameters.AddWithValue("@CustomerName", SqlDbType.VarChar).Value = txt_Customername.Text;
-                    cmd.Parameters.AddWithValue("@StartingDate", SqlDbType.DateTime).Value = dateTimePicker_Startingdate.Text;
-                    cmd.Parameters.AddWithValue("@DueDate", SqlDbType.DateTime).Value = dateTimePicker_Duedate.Text;
-                    cmd.Parameters.AddWithValue("@PhoneNumber", SqlDbType.VarChar).Value = txt_Phonenumber.Text;
-                    cmd.Parameters.AddWithValue("@RentRate", SqlDbType.Decimal).Value = Convert.ToDecimal(txt_Rentrate.Text);
-                    cmd.Parameters.AddWithValue("@Discount", SqlDbType.Decimal).Value = Convert.ToDecimal(txt_Discount.Text);
-                    cmd.Parameters.AddWithValue("@Address", SqlDbType.VarChar).Value = txt_Address.Text;
-                    cmd.Parameters.AddWithValue("@Total", SqlDbType.Decimal).Value = txtTotal.Text;
-                    cmd.Parameters.AddWithValue("@TId", SqlDbType.Int).Value = tid;
-                    cmd.Parameters.AddWithValue("@AvbItem", SqlDbType.Int).Value = Avlbitem;
+                    // con.Open();
 
-                    cmd.ExecuteNonQuery();
-                   /*SqlCommand myCmd = new SqlCommand("Rent_Select", con);
-                    myCmd.CommandType = CommandType.StoredProcedure;
-                    SqlDataAdapter da = new SqlDataAdapter(myCmd);
-                    DataTable dt = new DataTable();
-                    da.Fill(dt);
-                    dgv_add_Rent.DataSource = dt;*/
-                    con.Close();
-                DisplayRent();
+                    //  cmd.ExecuteNonQuery();
+                    /*SqlCommand myCmd = new SqlCommand("Rent_Select", con);
+                     myCmd.CommandType = CommandType.StoredProcedure;
+                     SqlDataAdapter da = new SqlDataAdapter(myCmd);
+                     DataTable dt = new DataTable();
+                     da.Fill(dt);
+                     dgv_add_Rent.DataSource = dt;*/
+                    // con.Close();
+                    DisplayRent();
                     BtnClr();
                 }
                 else
@@ -68,11 +72,11 @@ namespace RentApplication
                     MessageBox.Show("please fill in the blanks", "confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
                 }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Error occured");
-            }
+           // }
+          //  catch (Exception)
+           // {
+            //    MessageBox.Show("Error occured");
+            //}
 
 
             /*dgv_add_Rent.Rows[0].Cells["SlNo"].Value = Txt_SlNo.Text;
@@ -119,20 +123,24 @@ namespace RentApplication
         }
         public void Datafetchdrop()
         {
-            try
+           try
             {
-                con.Open();
+               
                 string query = "select distinct(ItemName) from AddTools_tb ";
-                SqlCommand cmd = new SqlCommand(query, con);
+                SqlCommand cmd = new SqlCommand(query, connect.getconnection);
+               connect.openConnect();
+                
                 SqlDataReader sdr = cmd.ExecuteReader();
                 while (sdr.Read())
                 {
                     comboBox_Itemname.Items.Add(sdr.GetValue(0).ToString());
                 }
                 sdr.Close();
-                con.Close();
+
+                connect.closeConnect();
+                
             }
-            catch (Exception)
+           catch (Exception)
             {
                 MessageBox.Show("Error occured");
             }
@@ -263,30 +271,45 @@ namespace RentApplication
             {
                 int blnsItem = Int32.Parse(BlnsNumItem.Text);
                 Avlbitem = blnsItem + dfrns1;
-                if (MessageBox.Show("Are you sure want to delete?", "confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) ;
+                if (MessageBox.Show("Are you sure want to delete?", "confirmation", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) 
                 {
                     /* index = dgv_add_Rent.CurrentCell.RowIndex;
                      dgv_add_Rent.Rows.RemoveAt(index);*/
-                    con.Open();
+                    
 
 
-                    SqlCommand cmd = new SqlCommand("Rent_Delete", con);
+                    SqlCommand cmd = new SqlCommand("Rent_Delete", connect.getconnection);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("@flag", SqlDbType.Int).Value = Rid;
                     cmd.Parameters.AddWithValue("@avlbitem", SqlDbType.Int).Value = Avlbitem;
                     cmd.Parameters.AddWithValue("@Ntid", SqlDbType.Int).Value = Ntid;
-                    cmd.ExecuteNonQuery();
+                
+                    connect.openConnect();
+                    if (cmd.ExecuteNonQuery() == 1)
+                    {
+                        connect.closeConnect();
+                        MessageBox.Show("Delete succefull!!");
+                        BtnClr();
+
+                    }
+                    else
+                    {
+                        connect.closeConnect();
+                    }
                     
-                    con.Close();
                     DisplayRent();
                 }
-            
-            /* if (cmd.Connection.State == ConnectionState.Open)
-             {
-                 cmd.Connection.Close();
-             }*/
-            MessageBox.Show("Delete succefull!!");
-                BtnClr();
+                else
+                {
+                    comboBox_Itemname.Focus();
+                }
+
+                /* if (cmd.Connection.State == ConnectionState.Open)
+                 {
+                     cmd.Connection.Close();
+                 }*/
+               
+               
             }
             catch(Exception)
             {
@@ -302,8 +325,8 @@ namespace RentApplication
             { 
             foreach (DataGridViewRow row in dgv_add_Rent.Rows)
             {
-                con.Open();
-                SqlCommand cmd = new SqlCommand("Add_Rent_Ins", con);
+             //   con.Open();
+                SqlCommand cmd = new SqlCommand("Add_Rent_Ins", connect.getconnection);
                 cmd.CommandType = CommandType.StoredProcedure;
                 // cmd.Parameters.AddWithValue("@Flag", SqlDbType.Int).Value = N_Id;
                 if (row.IsNewRow) continue;
@@ -320,9 +343,18 @@ namespace RentApplication
                 cmd.Parameters.AddWithValue("@Total", row.Cells[10].Value ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@TId", row.Cells[11].Value ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@AvbItem", row.Cells[12].Value ?? DBNull.Value);
+                    connect.openConnect();
+                    if (cmd.ExecuteNonQuery() == 1)
+                    {
+                        connect.closeConnect();
 
-                cmd.ExecuteNonQuery();
-                con.Close();
+                    }
+                    else
+                    {
+                        connect.closeConnect();
+                    }
+                  //  cmd.ExecuteNonQuery();
+              //  con.Close();
 
             }
             MessageBox.Show("Added New Rent Items");
@@ -342,7 +374,7 @@ namespace RentApplication
                 DateTime d1 = dateTimePicker_Startingdate.Value.Date;
                 DateTime d2 = dateTimePicker_Duedate.Value.Date;
                 int dateiff = ((TimeSpan)(d2 - d1)).Days;
-                decimal percent, Rrate, total, Disc;
+               
                 Rrate = Convert.ToDecimal(txt_Rentrate.Text);
                 NumofItem = Int32.Parse(txt_Numberofitem.Text);
                 Disc = Convert.ToDecimal(txt_Discount.Text);
@@ -362,14 +394,14 @@ namespace RentApplication
             {
 
 
-                con.Open();
-                SqlCommand myCmd = new SqlCommand("Rent_Select", con);
+                connect.openConnect();
+                SqlCommand myCmd = new SqlCommand("Rent_Select", connect.getconnection);
                 myCmd.CommandType = CommandType.StoredProcedure;
                 SqlDataAdapter da = new SqlDataAdapter(myCmd);
                 DataTable dt = new DataTable();
                 da.Fill(dt);
                 dgv_add_Rent.DataSource = dt;
-                con.Close();
+                connect.closeConnect();
             }
             catch(Exception)
             {
@@ -380,6 +412,7 @@ namespace RentApplication
         {
             Datafetchdrop();
             DisplayRent();
+            comboBox_Itemname.Focus();
             Txt_SlNo.Enabled = false;
         }
 
@@ -434,8 +467,8 @@ namespace RentApplication
             {
 
 
-                con.Open();
-                SqlCommand myCmd = new SqlCommand("RentDueDate_Select", con);
+                connect.openConnect();
+                SqlCommand myCmd = new SqlCommand("RentDueDate_Select", connect.getconnection);
                 myCmd.CommandType = CommandType.StoredProcedure;
                 myCmd.Parameters.AddWithValue("@Todaydate", SqlDbType.DateTime).Value = DateTime.Parse(Todaydate);
                 myCmd.ExecuteNonQuery();
@@ -444,7 +477,7 @@ namespace RentApplication
                 DataTable dt = new DataTable();
                 da.Fill(dt);
                 dgv_add_Rent.DataSource = dt;
-                con.Close();
+                connect.closeConnect();
             }
             catch (Exception)
             {
@@ -570,9 +603,9 @@ namespace RentApplication
             try
             {
 
-                con.Open();
+                connect.openConnect();
                 string query = "select NumberofItem,RentingRate,SlNo,TId from AddTools_tb where ItemName='" + comboBox_Itemname.Text + "'"; SqlCommand cmd = new SqlCommand();
-                SqlCommand cmd1 = new SqlCommand(query, con);
+                SqlCommand cmd1 = new SqlCommand(query, connect.getconnection);
                 SqlDataReader sdr = cmd1.ExecuteReader();
                 while (sdr.Read())
                 {
@@ -582,7 +615,7 @@ namespace RentApplication
                     tid = Int32.Parse(sdr[3].ToString());
                 }
 
-                con.Close();
+                connect.closeConnect();
             }
             catch (Exception)
             {

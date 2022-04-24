@@ -13,7 +13,8 @@ namespace RentApplication
 {
     public partial class Rent_List_Frm : Form
     {
-        SqlConnection con = new SqlConnection(@"Data Source=localhost\sqlexpress;Initial Catalog=Rental_db;Integrated Security=True");
+        DBconnect connect = new DBconnect();
+      //  SqlConnection con = new SqlConnection(@"Data Source=localhost\sqlexpress;Initial Catalog=Rental_db;Integrated Security=True");
 
         public Rent_List_Frm()
         {
@@ -28,15 +29,15 @@ namespace RentApplication
 
         private void Rent_List_Frm_Load_1(object sender, EventArgs e)
         {
-            con.Open();
-            SqlCommand myCmd = new SqlCommand("Rent_Select", con);
+            connect.openConnect();
+            SqlCommand myCmd = new SqlCommand("Rent_Select", connect.getconnection);
             myCmd.CommandType = CommandType.StoredProcedure;
                      SqlDataAdapter da = new SqlDataAdapter(myCmd);
             
             DataTable dt = new DataTable();
             da.Fill(dt);
             dataGridView1.DataSource = dt;
-            con.Close();
+            connect.closeConnect();
 
 
             

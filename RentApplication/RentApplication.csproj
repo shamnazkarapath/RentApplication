@@ -81,6 +81,7 @@
     <Compile Include="Add_Toos_Frm.Designer.cs">
       <DependentUpon>Add_Toos_Frm.cs</DependentUpon>
     </Compile>
+    <Compile Include="DBconnect.cs" />
     <Compile Include="DueItemList.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -95,6 +96,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RentClass.cs" />
     <Compile Include="Rent_List_Frm.cs">
       <SubType>Form</SubType>
     </Compile>

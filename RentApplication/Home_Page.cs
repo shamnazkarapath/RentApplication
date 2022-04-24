@@ -20,6 +20,7 @@ namespace RentApplication
         private void btn_Rent_Click(object sender, EventArgs e)
         {
             openchildForm(new Add_Rent_Frm());
+            
             //Add_Rent_Frm AR = new Add_Rent_Frm();
            // AR.Show();
         }

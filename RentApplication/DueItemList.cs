@@ -13,7 +13,8 @@ namespace RentApplication
 {
     public partial class DueItemList : Form
     {
-        SqlConnection con=new SqlConnection(@"Data Source=localhost\sqlexpress;Initial Catalog=Rental_db;Integrated Security=True");
+        DBconnect connect = new DBconnect();
+        //SqlConnection con=new SqlConnection(@"Data Source=localhost\sqlexpress;Initial Catalog=Rental_db;Integrated Security=True");
         string Duedate, Todaydate=DateTime.Now.ToString();
         public DueItemList()
         {
@@ -22,14 +23,15 @@ namespace RentApplication
         public void FtechDuedate()
         {
           
-            con.Open();
+            connect.openConnect();
             string query = "select DueDate from Rent_tb";
-            SqlCommand cmd = new SqlCommand(query, con);
+            SqlCommand cmd = new SqlCommand(query, connect.getconnection);
             SqlDataReader sdr = cmd.ExecuteReader();
             while(sdr.Read())
             {
                 Duedate = sdr[0].ToString();
             }
+            connect.closeConnect();
         }
 
         private void dgv_Duelist_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -49,8 +51,8 @@ namespace RentApplication
          {
              
 
-                con.Open();
-                SqlCommand myCmd = new SqlCommand("RentDueDate_Select", con);
+                connect.openConnect();
+                SqlCommand myCmd = new SqlCommand("RentDueDate_Select", connect.getconnection);
                 myCmd.CommandType = CommandType.StoredProcedure;
             myCmd.Parameters.AddWithValue("@Todaydate", SqlDbType.DateTime).Value = DateTime.Parse( Todaydate);
             myCmd.ExecuteNonQuery();
@@ -59,7 +61,7 @@ namespace RentApplication
                 DataTable dt = new DataTable();
                 da.Fill(dt);
                 dgv_Duelist.DataSource = dt;
-                con.Close();
+                connect.closeConnect();
           }
             catch (Exception)
             {
